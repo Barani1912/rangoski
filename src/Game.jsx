@@ -8,7 +8,7 @@ const HIT_RADIUS = 56 // forgiving hitbox radius in px
 const MOSQUITO_SIZE = 64
 const SPAWN_DELAY = 800 // ms between mosquitoes
 
-export default function Game({ onGameEnd, speedMultiplier = 1.0 }) {
+export default function Game({ onGameEnd, onReset, speedMultiplier = 1.0 }) {
   const gameAreaRef = useRef(null)
   const mosquitoRef = useRef({ x: 0, y: 0, vx: 0, vy: 0, angle: 0, speed: 2 })
   const animFrameRef = useRef(null)
@@ -386,20 +386,35 @@ export default function Game({ onGameEnd, speedMultiplier = 1.0 }) {
 
   return (
     <>
-      {/* HUD */}
+      {/* HUD — Fixed 3-column layout so dots NEVER move */}
       <div className="hud">
-        <div className="score-dots">
-          {Array.from({ length: TOTAL_MOSQUITOES }, (_, i) => {
-            let cls = 'score-dot'
-            if (results[i] === 'killed') cls += ' killed'
-            else if (results[i] === 'missed') cls += ' missed'
-            else if (i === results.length && mosquitoAlive) cls += ' active'
-            return <div key={i} className={cls} />
-          })}
+        <div className="hud-left">
+          <button
+            type="button"
+            className="reset-btn"
+            onClick={onReset}
+            title="Restart from 1st mosquito"
+            aria-label="Restart from 1st mosquito"
+          >
+            <span className="reset-icon">🔄</span>
+            <span className="reset-label">Reset</span>
+          </button>
         </div>
 
-        {mosquitoAlive && (
-          <div className="timer-ring-container">
+        <div className="hud-center">
+          <div className="score-dots">
+            {Array.from({ length: TOTAL_MOSQUITOES }, (_, i) => {
+              let cls = 'score-dot'
+              if (results[i] === 'killed') cls += ' killed'
+              else if (results[i] === 'missed') cls += ' missed'
+              else if (i === results.length && mosquitoAlive) cls += ' active'
+              return <div key={i} className={cls} />
+            })}
+          </div>
+        </div>
+
+        <div className="hud-right">
+          <div className={`timer-ring-container ${!mosquitoAlive ? 'idle' : ''}`}>
             <svg className="timer-ring" viewBox="0 0 36 36">
               <circle className="timer-ring-bg" cx="18" cy="18" r={timerRadius} />
               <circle
@@ -408,12 +423,14 @@ export default function Game({ onGameEnd, speedMultiplier = 1.0 }) {
                 cy="18"
                 r={timerRadius}
                 strokeDasharray={timerCircumference}
-                strokeDashoffset={timerOffset}
+                strokeDashoffset={mosquitoAlive ? timerOffset : 0}
               />
             </svg>
-            <div className="timer-text">{Math.ceil(timeLeft)}</div>
+            <div className="timer-text">
+              {mosquitoAlive ? Math.ceil(timeLeft) : '—'}
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Game Area */}

@@ -7,12 +7,19 @@ export default function App() {
   const [gameState, setGameState] = useState('start') // 'start' | 'playing' | 'end'
   const [results, setResults] = useState({ killed: 0, missed: 0 })
   const [speedLevel, setSpeedLevel] = useState(3) // Default to 3: Average (1.0x)
+  const [gameKey, setGameKey] = useState(0)
 
   const activeSpeedConfig = SPEED_LEVELS.find(s => s.level === speedLevel) || SPEED_LEVELS[2]
 
   const startGame = () => {
     setGameState('playing')
     setResults({ killed: 0, missed: 0 })
+    setGameKey(k => k + 1)
+  }
+
+  const handleReset = () => {
+    setResults({ killed: 0, missed: 0 })
+    setGameKey(k => k + 1)
   }
 
   const endGame = (killed, missed) => {
@@ -35,11 +42,18 @@ export default function App() {
         <h1 className="title">Rangoski</h1>
       </div>
 
-      {/* Vertical Speed Slider on the Right Side */}
-      <SpeedSlider currentLevel={speedLevel} onLevelChange={setSpeedLevel} />
+      {/* Speed Slider ONLY before the game start (on start screen) */}
+      {gameState === 'start' && (
+        <SpeedSlider currentLevel={speedLevel} onLevelChange={setSpeedLevel} />
+      )}
 
       {gameState === 'playing' && (
-        <Game onGameEnd={endGame} speedMultiplier={activeSpeedConfig.mult} />
+        <Game
+          key={gameKey}
+          onGameEnd={endGame}
+          onReset={handleReset}
+          speedMultiplier={activeSpeedConfig.mult}
+        />
       )}
 
       {gameState === 'start' && (
@@ -51,6 +65,9 @@ export default function App() {
           <p className="screen-subtitle">
             Kill 10 mosquitoes with your trusty fly swatter. You have 10 seconds each. Ready?
           </p>
+          <div className="start-speed-pill" style={{ borderColor: activeSpeedConfig.color }}>
+            <span>Speed: {activeSpeedConfig.icon} <strong>{activeSpeedConfig.label}</strong> ({activeSpeedConfig.mult}x)</span>
+          </div>
           <br />
           <button className="play-btn" onClick={startGame}>
             🪰 Start Swatting
@@ -73,9 +90,14 @@ export default function App() {
               <div className="stat-label">Escaped</div>
             </div>
           </div>
-          <button className="play-btn" onClick={startGame}>
-            🔄 Play Again
-          </button>
+          <div className="end-actions">
+            <button className="play-btn" onClick={startGame}>
+              🔄 Play Again
+            </button>
+            <button className="change-speed-btn" onClick={() => setGameState('start')}>
+              ⚙️ Change Speed
+            </button>
+          </div>
         </div>
       )}
     </div>
