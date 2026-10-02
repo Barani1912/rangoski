@@ -199,9 +199,10 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
       lastTime = now
       const bounds = getBounds()
 
-      // Random turn
+      // Random turn (faster direction changes at higher speeds)
       mRef.turnTimer += dt
-      if (mRef.turnTimer > 30 + Math.random() * 60) {
+      const turnInterval = Math.max(12, (30 + Math.random() * 50) / Math.sqrt(speedMultiplier || 1))
+      if (mRef.turnTimer > turnInterval) {
         mRef.turnTimer = 0
         const turnAngle = (Math.random() - 0.5) * Math.PI * 0.8
         const cos = Math.cos(turnAngle)
@@ -214,12 +215,14 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
 
       // Occasional zigzag burst
       mRef.zigzagTimer += dt
-      if (mRef.zigzagTimer > 120 + Math.random() * 200) {
+      const zigzagInterval = Math.max(40, (120 + Math.random() * 200) / Math.sqrt(speedMultiplier || 1))
+      if (mRef.zigzagTimer > zigzagInterval) {
         mRef.zigzagTimer = 0
         if (Math.random() < 0.4) {
           const perpAngle = Math.atan2(mRef.vy, mRef.vx) + (Math.random() > 0.5 ? 1 : -1) * Math.PI / 2
-          mRef.vx += Math.cos(perpAngle) * 2
-          mRef.vy += Math.sin(perpAngle) * 2
+          const burstAmt = 2 * Math.min(3, Math.sqrt(speedMultiplier || 1))
+          mRef.vx += Math.cos(perpAngle) * burstAmt
+          mRef.vy += Math.sin(perpAngle) * burstAmt
         }
       }
 
@@ -253,26 +256,24 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
       mRef.y += mRef.vy * dt
 
       // Bounce off walls with randomness
-      const wallPadding = 20
-      if (mRef.x < wallPadding) {
+      const wallPadding = 24
+      if (mRef.x <= wallPadding) {
         mRef.x = wallPadding
-        mRef.vx = Math.abs(mRef.vx) * (0.8 + Math.random() * 0.4)
-        mRef.vy += (Math.random() - 0.5) * 1.5
-      }
-      if (mRef.x > bounds.width - wallPadding) {
+        mRef.vx = Math.abs(mRef.vx) * (0.85 + Math.random() * 0.3)
+        mRef.vy += (Math.random() - 0.5) * 2.5
+      } else if (mRef.x >= bounds.width - wallPadding) {
         mRef.x = bounds.width - wallPadding
-        mRef.vx = -Math.abs(mRef.vx) * (0.8 + Math.random() * 0.4)
-        mRef.vy += (Math.random() - 0.5) * 1.5
+        mRef.vx = -Math.abs(mRef.vx) * (0.85 + Math.random() * 0.3)
+        mRef.vy += (Math.random() - 0.5) * 2.5
       }
-      if (mRef.y < wallPadding) {
+      if (mRef.y <= wallPadding) {
         mRef.y = wallPadding
-        mRef.vy = Math.abs(mRef.vy) * (0.8 + Math.random() * 0.4)
-        mRef.vx += (Math.random() - 0.5) * 1.5
-      }
-      if (mRef.y > bounds.height - wallPadding) {
+        mRef.vy = Math.abs(mRef.vy) * (0.85 + Math.random() * 0.3)
+        mRef.vx += (Math.random() - 0.5) * 2.5
+      } else if (mRef.y >= bounds.height - wallPadding) {
         mRef.y = bounds.height - wallPadding
-        mRef.vy = -Math.abs(mRef.vy) * (0.8 + Math.random() * 0.4)
-        mRef.vx += (Math.random() - 0.5) * 1.5
+        mRef.vy = -Math.abs(mRef.vy) * (0.85 + Math.random() * 0.3)
+        mRef.vx += (Math.random() - 0.5) * 2.5
       }
 
       // Clamp speed

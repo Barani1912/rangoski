@@ -1257,44 +1257,51 @@ body {
    ============================================ */
 
 @media (max-width: 640px) {
-  .home-screen-layout {
+  .theme-toggle-label {
+    display: none;
+  }
+
+  .theme-toggle-btn {
+    padding: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    justify-content: center;
+    top: max(22px, env(safe-area-inset-top, 22px));
+    right: 16px;
+    gap: 0;
+  }
+
+  .home-screen-layout,
+  .end-screen-layout {
     padding: 20px 14px 28px;
   }
 
-  .home-top-header {
-    gap: 12px;
+  .home-top-header,
+  .end-top-header {
+    gap: 10px;
+    padding: 0 44px;
+    justify-content: center;
   }
 
-  .home-top-mosquito-img {
-    width: 58px;
-    height: 58px;
+  .home-top-mosquito-img,
+  .end-top-mosquito-img {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
   }
 
-  .home-top-title {
-    font-size: 2.8rem;
+  .home-top-title,
+  .end-top-title {
+    font-size: 2.6rem;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
   }
 
   .home-start-btn {
     padding: 13px 28px;
     font-size: 1.05rem;
     max-width: 100%;
-  }
-
-  .end-screen-layout {
-    padding: 20px 14px 28px;
-  }
-
-  .end-top-header {
-    gap: 12px;
-  }
-
-  .end-top-mosquito-img {
-    width: 58px;
-    height: 58px;
-  }
-
-  .end-top-title {
-    font-size: 2.8rem;
   }
 
   .end-stats-row {
@@ -1308,6 +1315,21 @@ body {
 }
 
 @media (max-width: 480px) {
+  .theme-toggle-label {
+    display: none;
+  }
+
+  .theme-toggle-btn {
+    padding: 7px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    justify-content: center;
+    top: max(20px, env(safe-area-inset-top, 20px));
+    right: 14px;
+    gap: 0;
+  }
+
   .title-bar {
     padding: 6px 0 2px;
   }
@@ -1341,15 +1363,25 @@ body {
     padding: 16px 12px 24px;
   }
 
+  .home-top-header,
+  .end-top-header {
+    gap: 8px;
+    padding: 0 38px;
+    justify-content: center;
+  }
+
   .home-top-mosquito-img,
   .end-top-mosquito-img {
-    width: 48px;
-    height: 48px;
+    width: clamp(34px, 8vw, 42px);
+    height: clamp(34px, 8vw, 42px);
+    flex-shrink: 0;
   }
 
   .home-top-title,
   .end-top-title {
-    font-size: 2.3rem;
+    font-size: clamp(1.75rem, 6.2vw, 2.1rem);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
   }
 
   .speed-slider-horizontal {
@@ -1358,7 +1390,8 @@ body {
   }
 
   .tick-text {
-    font-size: 0.58rem;
+    font-size: 0.62rem;
+    font-weight: 800;
   }
 
   .tick-icon {

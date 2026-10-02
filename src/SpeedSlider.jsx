@@ -1,11 +1,11 @@
 import { Turtle, Clock, Gauge, Rocket, Flame } from 'lucide-react'
 
 export const SPEED_LEVELS = [
-  { level: 1, label: 'Very Slow', short: 'V.Slow', mult: 0.5, color: '#38bdf8', Icon: Turtle },
-  { level: 2, label: 'Slow', short: 'Slow', mult: 0.75, color: '#34d399', Icon: Clock },
-  { level: 3, label: 'Average', short: 'Average', mult: 1.0, color: '#4ade80', Icon: Gauge },
-  { level: 4, label: 'High', short: 'High', mult: 1.5, color: '#fbbf24', Icon: Rocket },
-  { level: 5, label: 'Very High', short: 'V.High', mult: 2.2, color: '#f87171', Icon: Flame },
+  { level: 1, label: 'Slow', short: '1x', mult: 1.0, color: '#38bdf8', Icon: Turtle },
+  { level: 2, label: 'Medium', short: '2.5x', mult: 2.5, color: '#34d399', Icon: Clock },
+  { level: 3, label: 'Fast', short: '5x', mult: 5.0, color: '#4ade80', Icon: Gauge },
+  { level: 4, label: 'V.High', short: '7.5x', mult: 7.5, color: '#fbbf24', Icon: Rocket },
+  { level: 5, label: 'Insane', short: '10x', mult: 10.0, color: '#f87171', Icon: Flame },
 ]
 
 export default function SpeedSlider({ currentLevel, onLevelChange }) {
