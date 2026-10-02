@@ -8,14 +8,17 @@ const HIT_RADIUS = 56 // forgiving hitbox radius in px
 const MOSQUITO_SIZE = 64
 const SPAWN_DELAY = 800 // ms between mosquitoes
 
-export default function Game({ onGameEnd }) {
+export default function Game({ onGameEnd, speedMultiplier = 1.0 }) {
   const gameAreaRef = useRef(null)
-  const mosquitoRef = useRef({ x: 0, y: 0, vx: 0, vy: 0, angle: 0 })
+  const mosquitoRef = useRef({ x: 0, y: 0, vx: 0, vy: 0, angle: 0, speed: 2 })
   const animFrameRef = useRef(null)
   const spawnTimeRef = useRef(0)
   const resultsRef = useRef([])
   const aliveRef = useRef(false)
   const processingRef = useRef(false) // guard against double-processing
+  const speedMultRef = useRef(speedMultiplier)
+  const prevSpeedMultiplierRef = useRef(speedMultiplier)
+  speedMultRef.current = speedMultiplier
 
   const [mosquitoPos, setMosquitoPos] = useState({ x: 0, y: 0, angle: 0 })
   const [mosquitoAlive, setMosquitoAlive] = useState(false)
@@ -84,10 +87,11 @@ export default function Game({ onGameEnd }) {
   // Spawn a mosquito at random position
   const spawnMosquito = useCallback(() => {
     const bounds = getBounds()
-    const padding = 60
-    const x = padding + Math.random() * (bounds.width - padding * 2)
-    const y = padding + Math.random() * (bounds.height - padding * 2)
-    const speed = 1.5 + Math.random() * 1.5
+    const padding = Math.min(60, Math.max(24, bounds.width * 0.08))
+    const x = padding + Math.random() * Math.max(10, bounds.width - padding * 2)
+    const y = padding + Math.random() * Math.max(10, bounds.height - padding * 2)
+    const mult = speedMultRef.current || 1.0
+    const speed = (1.5 + Math.random() * 1.5) * mult
     const angle = Math.random() * Math.PI * 2
 
     mosquitoRef.current = {
@@ -112,6 +116,20 @@ export default function Game({ onGameEnd }) {
     setTimeLeft(MOSQUITO_LIFETIME)
     spawnTimeRef.current = Date.now()
   }, [getBounds])
+
+  // Dynamically update speed if slider changes while mosquito is currently flying
+  useEffect(() => {
+    if (!aliveRef.current || !mosquitoRef.current) return
+    const prev = prevSpeedMultiplierRef.current || 1.0
+    if (prev !== speedMultiplier) {
+      const ratio = speedMultiplier / prev
+      prevSpeedMultiplierRef.current = speedMultiplier
+      const m = mosquitoRef.current
+      m.speed = m.speed * ratio
+      m.vx = m.vx * ratio
+      m.vy = m.vy * ratio
+    }
+  }, [speedMultiplier])
 
   // Advance to next mosquito or end game
   const advanceToNext = useCallback((result) => {
@@ -319,30 +337,34 @@ export default function Game({ onGameEnd }) {
     setSwinging(true)
     setTimeout(() => setSwinging(false), 200)
 
-    // Check hit
+    // Check hit with touch-friendly radius
+    const hitRadius = isTouchRef.current ? 64 : HIT_RADIUS
     const mPos = mosquitoRef.current
     const dx = relX - mPos.x
     const dy = relY - mPos.y
     const dist = Math.sqrt(dx * dx + dy * dy)
 
-    if (dist < HIT_RADIUS) {
+    if (dist < hitRadius) {
       handleHit(relX, relY)
     }
   }, [getBounds, handleHit])
 
   // Mouse handlers
   const handleMouseMove = useCallback((e) => {
+    if (isTouchRef.current) return
     setSwatterPos({ x: e.clientX, y: e.clientY })
-    if (!showSwatter && !isTouchRef.current) setShowSwatter(true)
+    if (!showSwatter) setShowSwatter(true)
   }, [showSwatter])
 
   const handleMouseDown = useCallback((e) => {
+    if (isTouchRef.current) return
     e.preventDefault()
     handleInteraction(e.clientX, e.clientY)
   }, [handleInteraction])
 
-  // Touch handlers
+  // Touch handlers for mobile
   const handleTouchStart = useCallback((e) => {
+    isTouchRef.current = true
     e.preventDefault()
     const touch = e.touches[0]
     if (!touch) return
@@ -352,7 +374,7 @@ export default function Game({ onGameEnd }) {
 
     setTimeout(() => {
       if (isTouchRef.current) setShowSwatter(false)
-    }, 400)
+    }, 320)
   }, [handleInteraction])
 
   // Timer ring calculations

@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import Game from './Game.jsx'
 import mosquitoImg from './assets/m2.png'
+import SpeedSlider, { SPEED_LEVELS } from './SpeedSlider.jsx'
 
 export default function App() {
   const [gameState, setGameState] = useState('start') // 'start' | 'playing' | 'end'
   const [results, setResults] = useState({ killed: 0, missed: 0 })
+  const [speedLevel, setSpeedLevel] = useState(3) // Default to 3: Average (1.0x)
+
+  const activeSpeedConfig = SPEED_LEVELS.find(s => s.level === speedLevel) || SPEED_LEVELS[2]
 
   const startGame = () => {
     setGameState('playing')
@@ -31,8 +35,11 @@ export default function App() {
         <h1 className="title">Rangoski</h1>
       </div>
 
+      {/* Vertical Speed Slider on the Right Side */}
+      <SpeedSlider currentLevel={speedLevel} onLevelChange={setSpeedLevel} />
+
       {gameState === 'playing' && (
-        <Game onGameEnd={endGame} />
+        <Game onGameEnd={endGame} speedMultiplier={activeSpeedConfig.mult} />
       )}
 
       {gameState === 'start' && (

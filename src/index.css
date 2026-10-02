@@ -15,7 +15,7 @@
   --bg-primary: #eaedf1;
   --bg-secondary: #dfe4ea;
   --bg-game: #f1f4f8;
-  --bg-card: rgba(30, 41, 59, 0.78);
+  --bg-card: rgba(30, 41, 59, 0.85);
   --accent-green: #22c55e;
   --accent-red: #ef4444;
   --accent-yellow: #f59e0b;
@@ -34,8 +34,11 @@
 
 html, body, #root {
   height: 100%;
+  height: 100dvh;
   width: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -45,7 +48,7 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  touch-action: none;
+  touch-action: manipulation;
 }
 
 /* ============================================
@@ -55,6 +58,7 @@ body {
 .app {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,13 +91,13 @@ body {
 .title-bar {
   position: relative;
   z-index: 10;
-  padding: 16px 0 8px;
+  padding: clamp(8px, 2vh, 16px) 0 4px;
   text-align: center;
   flex-shrink: 0;
 }
 
 .title {
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
   font-weight: 900;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -120,8 +124,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 8px 20px;
+  gap: clamp(12px, 3vw, 24px);
+  padding: 6px 16px;
   flex-shrink: 0;
 }
 
@@ -129,13 +133,13 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-size: clamp(0.8rem, 2vw, 1rem);
   font-weight: 800;
   color: #ffffff;
   background: rgba(30, 41, 59, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 20px;
-  padding: 6px 16px;
+  padding: 6px 14px;
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
@@ -154,15 +158,15 @@ body {
 /* Timer circle */
 .timer-ring-container {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
 }
 
 .timer-ring {
   transform: rotate(-90deg);
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
 }
 
 .timer-ring-bg {
@@ -200,6 +204,159 @@ body {
 }
 
 /* ============================================
+   Vertical Speed Slider (Right Side)
+   ============================================ */
+
+.speed-control-container {
+  position: fixed;
+  right: clamp(10px, 2.5vw, 24px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px;
+  background: rgba(30, 41, 59, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 28px;
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    0 8px 30px rgba(15, 23, 42, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+  user-select: none;
+  touch-action: none;
+}
+
+.speed-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.25s ease;
+}
+
+.speed-badge-icon {
+  font-size: 0.95em;
+}
+
+.speed-badge-text {
+  text-transform: uppercase;
+}
+
+.speed-slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.speed-track-bg {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.speed-track-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 3px;
+  transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+}
+
+.speed-steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2;
+  width: 100%;
+}
+
+.speed-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.speed-step-btn:hover {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.speed-step-btn.active {
+  background: rgba(15, 23, 42, 0.9);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.speed-step-btn.active .step-dot {
+  box-shadow: 0 0 8px currentColor;
+}
+
+.step-label {
+  display: inline-block;
+}
+
+.step-short-label {
+  display: none;
+}
+
+/* Invisible range input for full dragging accessibility */
+.speed-range-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+  pointer-events: none; /* Button clicks are primary; keeps native keyboard accessible */
+}
+
+/* ============================================
    Game Area
    ============================================ */
 
@@ -210,6 +367,7 @@ body {
   z-index: 1;
   cursor: none;
   overflow: hidden;
+  touch-action: none;
 }
 
 .game-area.show-cursor {
@@ -222,8 +380,8 @@ body {
 
 .mosquito {
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: clamp(52px, 10vw, 64px);
+  height: clamp(52px, 10vw, 64px);
   pointer-events: none;
   z-index: 5;
   transition: none;
@@ -298,13 +456,13 @@ body {
 }
 
 /* ============================================
-   Fly Swatter (Custom Cursor)
+   Fly Swatter (Custom Cursor & Tap Target)
    ============================================ */
 
 .swatter {
   position: fixed;
-  width: 68px;
-  height: 68px;
+  width: clamp(56px, 12vw, 68px);
+  height: clamp(56px, 12vw, 68px);
   pointer-events: none;
   z-index: 100;
   transform: translate(-50%, -50%);
@@ -381,7 +539,7 @@ body {
   position: absolute;
   pointer-events: none;
   z-index: 25;
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   font-weight: 900;
   color: #ffffff;
   animation: missFloat 0.8s ease-out forwards;
@@ -410,7 +568,7 @@ body {
   position: absolute;
   pointer-events: none;
   z-index: 25;
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   font-weight: 900;
   color: #ffffff;
   animation: hitFloat 0.7s ease-out forwards;
@@ -449,7 +607,8 @@ body {
   background: rgba(226, 232, 240, 0.88);
   backdrop-filter: blur(10px);
   animation: fadeIn 0.4s ease;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 24px);
+  text-align: center;
 }
 
 @keyframes fadeIn {
@@ -463,8 +622,8 @@ body {
 }
 
 .screen-mosquito-img {
-  width: clamp(100px, 18vw, 150px);
-  height: clamp(100px, 18vw, 150px);
+  width: clamp(80px, 18vw, 150px);
+  height: clamp(80px, 18vw, 150px);
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
   animation: mosquitoFloat 2.5s ease-in-out infinite;
@@ -480,7 +639,7 @@ body {
 }
 
 .screen-title {
-  font-size: clamp(2.6rem, 8vw, 4.6rem);
+  font-size: clamp(2.2rem, 8vw, 4.6rem);
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -494,30 +653,30 @@ body {
     -2px 2px 0 #0f172a,
     2px 2px 0 #0f172a,
     0 8px 24px rgba(15, 23, 42, 0.5);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   line-height: 1.1;
 }
 
 .screen-subtitle {
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.9rem, 2.8vw, 1.25rem);
   font-weight: 600;
   color: #ffffff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   background: rgba(30, 41, 59, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 16px;
   backdrop-filter: blur(8px);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   text-align: center;
-  max-width: 440px;
+  max-width: min(440px, 90vw);
   line-height: 1.5;
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
 }
 
 .screen-emoji {
-  font-size: clamp(3rem, 8vw, 5rem);
-  margin-bottom: 16px;
+  font-size: clamp(2.8rem, 8vw, 4.5rem);
+  margin-bottom: 14px;
   animation: emojiFloat 2s ease-in-out infinite;
 }
 
@@ -528,25 +687,25 @@ body {
 
 .screen-stats {
   display: flex;
-  gap: 20px;
-  margin: 16px 0 24px;
+  gap: clamp(12px, 3vw, 20px);
+  margin: 14px 0 20px;
 }
 
 .stat-box {
   text-align: center;
-  padding: 14px 24px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px);
   background: rgba(30, 41, 59, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
-  min-width: 110px;
+  min-width: clamp(80px, 20vw, 110px);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
 }
 
 .stat-value {
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
   font-weight: 900;
   line-height: 1;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .stat-value.green {
@@ -560,7 +719,7 @@ body {
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -572,9 +731,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 42px;
+  padding: clamp(12px, 2.5vh, 16px) clamp(28px, 6vw, 42px);
   font-family: var(--font-family);
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.95rem, 2.5vw, 1.25rem);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -588,10 +747,11 @@ body {
     0 6px 22px rgba(16, 185, 129, 0.45),
     0 2px 8px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  touch-action: manipulation;
 }
 
 .play-btn:hover {
-  transform: scale(1.06) translateY(-2px);
+  transform: scale(1.05) translateY(-2px);
   box-shadow:
     0 8px 30px rgba(16, 185, 129, 0.55),
     0 4px 12px rgba(0, 0, 0, 0.25);
@@ -607,13 +767,13 @@ body {
 
 .score-dots {
   display: flex;
-  gap: 7px;
+  gap: clamp(4px, 1.2vw, 7px);
   align-items: center;
 }
 
 .score-dot {
-  width: 12px;
-  height: 12px;
+  width: clamp(9px, 2vw, 12px);
+  height: clamp(9px, 2vw, 12px);
   border-radius: 50%;
   background: rgba(30, 41, 59, 0.25);
   border: 2px solid rgba(30, 41, 59, 0.5);
@@ -645,31 +805,93 @@ body {
 }
 
 /* ============================================
-   Responsive
+   Mobile & Responsive Styles
    ============================================ */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .speed-control-container {
+    right: 8px;
+    padding: 8px 6px;
+    gap: 6px;
+    border-radius: 20px;
+  }
+
+  .speed-badge {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .speed-badge-text {
+    display: none;
+  }
+
+  .speed-steps {
+    gap: 5px;
+  }
+
+  .speed-step-btn {
+    padding: 6px 8px;
+    gap: 4px;
+    font-size: 0.68rem;
+  }
+
+  .step-label {
+    display: none;
+  }
+
+  .step-short-label {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 480px) {
   .title-bar {
-    padding: 10px 0 4px;
+    padding: 6px 0 2px;
+  }
+
+  .title {
+    font-size: 1.7rem;
+    letter-spacing: 0.1em;
   }
 
   .hud {
-    gap: 12px;
-    padding: 4px 12px;
+    gap: 8px;
+    padding: 4px 8px;
   }
 
   .hud-item {
-    padding: 4px 12px;
-    font-size: 0.8rem;
+    padding: 4px 10px;
+    font-size: 0.75rem;
   }
 
-  .mosquito {
-    width: 56px;
-    height: 56px;
+  .speed-control-container {
+    right: 6px;
+    padding: 6px 4px;
+    gap: 4px;
+    border-radius: 18px;
   }
 
-  .swatter {
-    width: 60px;
-    height: 60px;
+  .speed-step-btn {
+    padding: 5px 6px;
+    min-width: 32px;
+    justify-content: center;
+  }
+
+  .step-short-label {
+    font-size: 0.62rem;
+  }
+
+  .screen-overlay {
+    padding: 12px;
+  }
+
+  .screen-subtitle {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .play-btn {
+    padding: 12px 28px;
+    font-size: 0.95rem;
   }
 }
