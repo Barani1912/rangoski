@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, Home, Sun, Moon } from 'lucide-react'
 import mosquitoImg from './assets/m2.png'
 import SwatterSVG from './SwatterSVG.jsx'
 
@@ -9,7 +9,7 @@ const HIT_RADIUS = 56 // forgiving hitbox radius in px
 const MOSQUITO_SIZE = 64
 const SPAWN_DELAY = 800 // ms between mosquitoes
 
-export default function Game({ onGameEnd, onReset, speedMultiplier = 1.0 }) {
+export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0, theme = 'dark', onToggleTheme }) {
   const gameAreaRef = useRef(null)
   const mosquitoRef = useRef({ x: 0, y: 0, vx: 0, vy: 0, angle: 0, speed: 2 })
   const animFrameRef = useRef(null)
@@ -392,13 +392,23 @@ export default function Game({ onGameEnd, onReset, speedMultiplier = 1.0 }) {
         <div className="hud-left">
           <button
             type="button"
-            className="reset-btn"
+            className="hud-action-btn home-btn"
+            onClick={onHome}
+            title="Back to Home Screen"
+            aria-label="Back to Home Screen"
+          >
+            <Home size={15} />
+            <span className="btn-label">Home</span>
+          </button>
+          <button
+            type="button"
+            className="hud-action-btn reset-btn"
             onClick={onReset}
             title="Restart from 1st mosquito"
             aria-label="Restart from 1st mosquito"
           >
-            <RotateCcw size={15} className="reset-icon" />
-            <span className="reset-label">Reset</span>
+            <RotateCcw size={15} />
+            <span className="btn-label">Reset</span>
           </button>
         </div>
 
@@ -415,6 +425,17 @@ export default function Game({ onGameEnd, onReset, speedMultiplier = 1.0 }) {
         </div>
 
         <div className="hud-right">
+          {onToggleTheme && (
+            <button
+              type="button"
+              className="hud-action-btn theme-hud-btn"
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+          )}
           <div className={`timer-ring-container ${!mosquitoAlive ? 'idle' : ''}`}>
             <svg className="timer-ring" viewBox="0 0 36 36">
               <circle className="timer-ring-bg" cx="18" cy="18" r={timerRadius} />
