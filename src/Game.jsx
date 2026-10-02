@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import MosquitoSVG from './MosquitoSVG.jsx'
+import mosquitoImg from './assets/m2.png'
 import SwatterSVG from './SwatterSVG.jsx'
 
 const TOTAL_MOSQUITOES = 10
 const MOSQUITO_LIFETIME = 10 // seconds
-const HIT_RADIUS = 48 // forgiving hitbox radius in px
-const MOSQUITO_SIZE = 48
+const HIT_RADIUS = 56 // forgiving hitbox radius in px
+const MOSQUITO_SIZE = 64
 const SPAWN_DELAY = 800 // ms between mosquitoes
 
 export default function Game({ onGameEnd }) {
@@ -409,11 +409,16 @@ export default function Game({ onGameEnd }) {
             style={{
               left: mosquitoPos.x - MOSQUITO_SIZE / 2,
               top: mosquitoPos.y - MOSQUITO_SIZE / 2,
-              transform: `rotate(${mosquitoPos.angle + 90}deg)`,
+              transform: `rotate(${mosquitoPos.angle + 135}deg)`,
             }}
           >
             <div className="mosquito-body">
-              <MosquitoSVG />
+              <img
+                src={mosquitoImg}
+                alt="Mosquito"
+                className="mosquito-img"
+                draggable={false}
+              />
             </div>
           </div>
         )}

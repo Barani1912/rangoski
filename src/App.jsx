@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Game from './Game.jsx'
+import mosquitoImg from './assets/m2.png'
 
 export default function App() {
   const [gameState, setGameState] = useState('start') // 'start' | 'playing' | 'end'
@@ -36,7 +37,9 @@ export default function App() {
 
       {gameState === 'start' && (
         <div className="screen-overlay">
-          <div className="screen-emoji">🦟</div>
+          <div className="screen-mosquito-wrap">
+            <img src={mosquitoImg} alt="Rangoski Mosquito" className="screen-mosquito-img" />
+          </div>
           <div className="screen-title">Rangoski</div>
           <p className="screen-subtitle">
             Kill 10 mosquitoes with your trusty fly swatter. You have 10 seconds each. Ready?
