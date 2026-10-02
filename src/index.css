@@ -719,6 +719,15 @@ body {
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
 }
 
+.screen-result-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  animation: emojiFloat 2s ease-in-out infinite;
+  filter: drop-shadow(0 4px 14px currentColor);
+}
+
 .screen-emoji {
   font-size: clamp(2.8rem, 8vw, 4.5rem);
   margin-bottom: 14px;

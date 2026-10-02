@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { RotateCcw } from 'lucide-react'
 import mosquitoImg from './assets/m2.png'
 import SwatterSVG from './SwatterSVG.jsx'
 
@@ -396,7 +397,7 @@ export default function Game({ onGameEnd, onReset, speedMultiplier = 1.0 }) {
             title="Restart from 1st mosquito"
             aria-label="Restart from 1st mosquito"
           >
-            <span className="reset-icon">🔄</span>
+            <RotateCcw size={15} className="reset-icon" />
             <span className="reset-label">Reset</span>
           </button>
         </div>
