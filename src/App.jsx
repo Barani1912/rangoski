@@ -16,7 +16,7 @@ import SpeedSlider, { SPEED_LEVELS } from './SpeedSlider.jsx'
 export default function App() {
   const [gameState, setGameState] = useState('start') // 'start' | 'playing' | 'end'
   const [theme, setTheme] = useState('dark') // 'dark' (default) | 'light'
-  const [results, setResults] = useState({ killed: 0, missed: 0 })
+  const [results, setResults] = useState({ killed: 0, missed: 0, accuracy: 0, totalSwats: 0 })
   const [speedLevel, setSpeedLevel] = useState(3) // Default to 3: Average (1.0x)
   const [gameKey, setGameKey] = useState(0)
 
@@ -28,58 +28,66 @@ export default function App() {
 
   const startGame = () => {
     setGameState('playing')
-    setResults({ killed: 0, missed: 0 })
+    setResults({ killed: 0, missed: 0, accuracy: 0, totalSwats: 0 })
     setGameKey(k => k + 1)
   }
 
   const handleReset = () => {
-    setResults({ killed: 0, missed: 0 })
+    setResults({ killed: 0, missed: 0, accuracy: 0, totalSwats: 0 })
     setGameKey(k => k + 1)
   }
 
   const goToHome = () => {
     setGameState('start')
-    setResults({ killed: 0, missed: 0 })
+    setResults({ killed: 0, missed: 0, accuracy: 0, totalSwats: 0 })
     setGameKey(k => k + 1)
   }
 
-  const endGame = (killed, missed) => {
-    setResults({ killed, missed })
+  const endGame = (killed, missed, accuracy = 0, totalSwats = 0) => {
+    setResults({ killed, missed, accuracy, totalSwats })
     setGameState('end')
   }
+
+  const accuracyPercent = results.accuracy !== undefined ? results.accuracy : 0
 
   const getOutcome = () => {
     const { killed } = results
     if (killed === 10) {
+      if (accuracyPercent === 100) {
+        return {
+          title: 'PERFECT HUNT',
+          subtitle: 'Flawless 100% precision! Every mosquito eliminated on the 1st swat.',
+          statusColor: '#22c55e',
+        }
+      }
       return {
-        title: 'PERFECT HUNT',
-        subtitle: 'All 10 mosquitoes eliminated with 100% precision.',
+        title: 'ALL 10 ELIMINATED',
+        subtitle: `All 10 mosquitoes destroyed with ${accuracyPercent}% chance efficiency!`,
         statusColor: '#22c55e',
       }
     }
     if (killed >= 7) {
       return {
         title: 'MISSION COMPLETE',
-        subtitle: 'Great reflexes! The room has been successfully cleared.',
+        subtitle: `Great reflexes! Cleared with ${accuracyPercent}% swat accuracy.`,
         statusColor: '#22c55e',
       }
     }
     if (killed >= 4) {
       return {
         title: 'ROUND COMPLETE',
-        subtitle: 'Good effort, but several mosquitoes managed to escape.',
+        subtitle: `Good effort! Achieved ${accuracyPercent}% swat accuracy.`,
         statusColor: '#f59e0b',
       }
     }
     return {
       title: 'ROUND OVER',
-      subtitle: 'The mosquitoes got away. Better reflexes needed next time.',
+      subtitle: 'The mosquitoes got away. Conserve your swats and try again!',
       statusColor: '#ef4444',
     }
   }
 
   const outcome = getOutcome()
-  const accuracyPercent = Math.round((results.killed / 10) * 100)
 
   return (
     <div className={`app theme-${theme}`} data-theme={theme}>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { RotateCcw, Home, Sun, Moon } from 'lucide-react'
+import { RotateCcw, Home, Sun, Moon, Crosshair } from 'lucide-react'
 import mosquitoImg from './assets/m2.png'
 import SwatterSVG from './SwatterSVG.jsx'
 
 const TOTAL_MOSQUITOES = 10
 const MOSQUITO_LIFETIME = 10 // seconds
+const MAX_SWATS = 5 // maximum 5 chances/swats per mosquito
 const HIT_RADIUS = 56 // forgiving hitbox radius in px
 const MOSQUITO_SIZE = 64
 const SPAWN_DELAY = 800 // ms between mosquitoes
@@ -15,8 +16,10 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
   const animFrameRef = useRef(null)
   const spawnTimeRef = useRef(0)
   const resultsRef = useRef([])
+  const mosquitoStatsRef = useRef([])
   const aliveRef = useRef(false)
   const processingRef = useRef(false) // guard against double-processing
+  const swatsLeftRef = useRef(MAX_SWATS)
   const speedMultRef = useRef(speedMultiplier)
   const prevSpeedMultiplierRef = useRef(speedMultiplier)
   speedMultRef.current = speedMultiplier
@@ -26,6 +29,7 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
   const [mosquitoDying, setMosquitoDying] = useState(false)
   const [mosquitoEscaping, setMosquitoEscaping] = useState(false)
   const [timeLeft, setTimeLeft] = useState(MOSQUITO_LIFETIME)
+  const [swatsLeft, setSwatsLeft] = useState(MAX_SWATS)
   const [results, setResults] = useState([])
   const [swatterPos, setSwatterPos] = useState({ x: -100, y: -100 })
   const [swinging, setSwinging] = useState(false)
@@ -51,16 +55,24 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
   }, [])
 
   // Add floating text effect
-  const addEffect = useCallback((x, y, type) => {
+  const addEffect = useCallback((x, y, type, detail) => {
     const id = Date.now() + Math.random()
-    const texts = type === 'hit'
-      ? ['SPLAT!', 'GOT IT!', 'SQUISH!', 'SWATTED!', 'BOOM!', 'NAILED IT!']
-      : ['ESCAPED!', 'TOO SLOW!', 'BZZ BZZ!', 'MISSED!', 'NOPE!']
-    const text = texts[Math.floor(Math.random() * texts.length)]
+    let text = ''
+    if (type === 'hit') {
+      const texts = ['SPLAT!', 'GOT IT!', 'SQUISH!', 'SWATTED!', 'BOOM!', 'NAILED IT!']
+      text = texts[Math.floor(Math.random() * texts.length)]
+    } else if (type === 'out_of_swats') {
+      text = 'OUT OF CHANCES!'
+    } else if (type === 'swat_miss') {
+      text = detail === 1 ? '1 CHANCE LEFT!' : `MISS! (${detail} LEFT)`
+    } else {
+      const texts = ['ESCAPED!', 'TOO SLOW!', 'BZZ BZZ!', 'MISSED!', 'NOPE!']
+      text = texts[Math.floor(Math.random() * texts.length)]
+    }
     setEffects(prev => [...prev, { id, x, y, type, text }])
     setTimeout(() => {
       setEffects(prev => prev.filter(e => e.id !== id))
-    }, 900)
+    }, 850)
   }, [])
 
   // Add impact particles
@@ -108,6 +120,8 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
       speed,
     }
 
+    swatsLeftRef.current = MAX_SWATS
+    setSwatsLeft(MAX_SWATS)
     processingRef.current = false
     aliveRef.current = true
     setMosquitoPos({ x, y, angle: 0 })
@@ -133,16 +147,23 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
   }, [speedMultiplier])
 
   // Advance to next mosquito or end game
-  const advanceToNext = useCallback((result) => {
-    const newResults = [...resultsRef.current, result]
+  const advanceToNext = useCallback((status, stat) => {
+    const newResults = [...resultsRef.current, status]
     resultsRef.current = newResults
     setResults(newResults)
+
+    if (stat) {
+      mosquitoStatsRef.current.push(stat)
+    }
 
     if (newResults.length >= TOTAL_MOSQUITOES) {
       setTimeout(() => {
         const killed = newResults.filter(r => r === 'killed').length
         const missed = newResults.filter(r => r === 'missed').length
-        onGameEndRef.current(killed, missed)
+        const sumAccuracy = mosquitoStatsRef.current.reduce((sum, s) => sum + s.accuracy, 0)
+        const finalAccuracy = Math.round(sumAccuracy / TOTAL_MOSQUITOES)
+        const totalSwats = mosquitoStatsRef.current.reduce((sum, s) => sum + s.swatsUsed, 0)
+        onGameEndRef.current(killed, missed, finalAccuracy, totalSwats)
       }, SPAWN_DELAY)
       return
     }
@@ -150,8 +171,8 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
     setTimeout(() => spawnMosquito(), SPAWN_DELAY)
   }, [spawnMosquito])
 
-  // Handle mosquito escape (timer ran out)
-  const handleMosquitoEscape = useCallback(() => {
+  // Handle mosquito escape (timer ran out or swats exhausted)
+  const handleMosquitoEscape = useCallback((reason = 'timeout') => {
     if (processingRef.current) return
     processingRef.current = true
     aliveRef.current = false
@@ -159,12 +180,17 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
     setMosquitoAlive(false)
     setMosquitoEscaping(true)
 
+    const swatsUsed = reason === 'swats' ? MAX_SWATS : MAX_SWATS - swatsLeftRef.current
     const mPos = mosquitoRef.current
-    addEffect(mPos.x, mPos.y, 'miss')
+    addEffect(mPos.x, mPos.y, reason === 'swats' ? 'out_of_swats' : 'miss')
 
     setTimeout(() => {
       setMosquitoEscaping(false)
-      advanceToNext('missed')
+      advanceToNext('missed', {
+        status: 'missed',
+        swatsUsed,
+        accuracy: 0,
+      })
     }, 600)
   }, [addEffect, advanceToNext])
 
@@ -177,13 +203,22 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
     setMosquitoAlive(false)
     setMosquitoDying(true)
 
+    const swatsLeftWhenHit = swatsLeftRef.current
+    const swatsUsed = MAX_SWATS - swatsLeftWhenHit + 1
+    // Accuracy for this mosquito based on chances conserved (1st chance = 100%, 2nd = 80%, etc.)
+    const mosquitoAccuracy = Math.round((swatsLeftWhenHit / MAX_SWATS) * 100)
+
     const mPos = mosquitoRef.current
     addEffect(mPos.x, mPos.y, 'hit')
     addParticles(mPos.x, mPos.y)
 
     setTimeout(() => {
       setMosquitoDying(false)
-      advanceToNext('killed')
+      advanceToNext('killed', {
+        status: 'killed',
+        swatsUsed,
+        accuracy: mosquitoAccuracy,
+      })
     }, 450)
   }, [addEffect, addParticles, advanceToNext])
 
@@ -327,9 +362,10 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
     return () => clearTimeout(timeout)
   }, [spawnMosquito])
 
-  // Handle click/tap
+  // Handle click/tap with 5 swat chances limit
   const handleInteraction = useCallback((clientX, clientY) => {
     if (!aliveRef.current || processingRef.current) return
+    if (swatsLeftRef.current <= 0) return
 
     const bounds = getBounds()
     const relX = clientX - bounds.left
@@ -348,8 +384,20 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
 
     if (dist < hitRadius) {
       handleHit(relX, relY)
+    } else {
+      // Swat missed
+      const newSwats = swatsLeftRef.current - 1
+      swatsLeftRef.current = newSwats
+      setSwatsLeft(newSwats)
+
+      if (newSwats <= 0) {
+        // 5th miss: mosquito escapes!
+        handleMosquitoEscape('swats')
+      } else {
+        addEffect(relX, relY, 'swat_miss', newSwats)
+      }
     }
-  }, [getBounds, handleHit])
+  }, [getBounds, handleHit, handleMosquitoEscape, addEffect])
 
   // Mouse handlers
   const handleMouseMove = useCallback((e) => {
@@ -456,6 +504,29 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
         </div>
       </div>
 
+      {/* Chances / Swats Tracker Banner */}
+      <div className="swat-tracker">
+        <div className={`swat-tracker-pill ${swatsLeft === 1 ? 'critical-pill' : ''}`}>
+          <Crosshair size={13} className="swat-tracker-icon" />
+          <span className="swat-tracker-label">CHANCES</span>
+          <div className="swat-tracker-pips">
+            {Array.from({ length: MAX_SWATS }, (_, i) => {
+              const isFilled = i < swatsLeft
+              const isCritical = swatsLeft === 1
+              return (
+                <span
+                  key={i}
+                  className={`swat-pip ${isFilled ? 'filled' : 'empty'} ${isCritical && isFilled ? 'critical' : ''}`}
+                />
+              )
+            })}
+          </div>
+          <span className={`swat-tracker-count ${swatsLeft === 1 ? 'critical-text' : ''}`}>
+            {swatsLeft}/{MAX_SWATS}
+          </span>
+        </div>
+      </div>
+
       {/* Game Area */}
       <div
         className={`game-area ${!showSwatter ? 'show-cursor' : ''}`}
@@ -505,7 +576,7 @@ export default function Game({ onGameEnd, onReset, onHome, speedMultiplier = 1.0
           return (
             <div
               key={eff.id}
-              className={eff.type === 'hit' ? 'hit-text' : 'miss-text'}
+              className={`${eff.type === 'hit' ? 'hit-text' : 'miss-text'} ${eff.type === 'out_of_swats' ? 'critical' : ''}`}
               style={{ left: eff.x, top: eff.y - 30 }}
             >
               {eff.text}

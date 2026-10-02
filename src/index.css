@@ -303,6 +303,138 @@ body {
 }
 
 /* ============================================
+   Swat Chances Tracker (Limit Setter Visualization)
+   ============================================ */
+
+.swat-tracker {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 2px auto 8px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.swat-tracker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.app.theme-light .swat-tracker-pill {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+}
+
+.swat-tracker-pill.critical-pill {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(76, 29, 39, 0.85);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+  animation: criticalPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.swat-tracker-icon {
+  color: #38bdf8;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.swat-tracker-pill.critical-pill .swat-tracker-icon {
+  color: #f87171;
+}
+
+.swat-tracker-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.app.theme-light .swat-tracker-label {
+  color: #475569;
+}
+
+.swat-tracker-pill.critical-pill .swat-tracker-label {
+  color: #fca5a5;
+}
+
+.swat-tracker-pips {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.swat-pip {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.swat-pip.filled {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.swat-pip.filled.critical {
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+  animation: criticalPipPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes criticalPipPulse {
+  0% { opacity: 0.7; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+.swat-pip.empty {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transform: scale(0.85);
+}
+
+.app.theme-light .swat-pip.empty {
+  background: rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+}
+
+.swat-tracker-count {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  min-width: 26px;
+  text-align: right;
+}
+
+.app.theme-light .swat-tracker-count {
+  color: #0f172a;
+}
+
+.swat-tracker-count.critical-text {
+  color: #f87171;
+  font-weight: 900;
+}
+
+/* ============================================
    Horizontal Speed Slider (Inside Home Card)
    ============================================ */
 
@@ -662,6 +794,24 @@ body {
     -1px 1px 0 #ef4444,
     1px 1px 0 #ef4444,
     0 4px 10px rgba(239, 68, 68, 0.5);
+}
+
+.miss-text.critical {
+  font-size: clamp(1.25rem, 4vw, 1.6rem);
+  color: #fee2e2;
+  text-shadow: 
+    0 2px 0 #b91c1c,
+    -1px -1px 0 #b91c1c,
+    1px -1px 0 #b91c1c,
+    -1px 1px 0 #b91c1c,
+    1px 1px 0 #b91c1c,
+    0 4px 14px rgba(239, 68, 68, 0.85);
+  animation: criticalMissFloat 0.9s ease-out forwards;
+}
+
+@keyframes criticalMissFloat {
+  0% { opacity: 1; transform: translateY(0) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-45px) scale(0.9); }
 }
 
 @keyframes missFloat {
@@ -1402,6 +1552,30 @@ body {
   .home-start-btn {
     padding: 12px 22px;
     font-size: 1rem;
+  }
+
+  .swat-tracker {
+    margin: 0 auto 5px;
+  }
+
+  .swat-tracker-pill {
+    padding: 4px 10px;
+    gap: 6px;
+  }
+
+  .swat-tracker-label {
+    font-size: 0.65rem;
+  }
+
+  .swat-pip {
+    width: 10px;
+    height: 5px;
+    border-radius: 2px;
+  }
+
+  .swat-tracker-count {
+    font-size: 0.7rem;
+    min-width: 22px;
   }
 
   .end-status-badge {
